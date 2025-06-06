@@ -1,4 +1,4 @@
-# `mic-icon`
+# 🎤 `mic-icon`
 
 ![GIF of mic-icon](assets/mic-icon.gif)
 
