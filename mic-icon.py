@@ -10,8 +10,8 @@ gi.require_version('AppIndicator3', '0.1')
 from gi.repository import Gtk, GLib, AppIndicator3
 
 # ICON NAMES from the default Adwaita icon set:
-ICON_UNMUTED = "microphone-sensitivity-high-symbolic"
-ICON_MUTED = "microphone-sensitivity-muted-symbolic"
+ICON_UNMUTED = "microphone"
+ICON_MUTED = "gtk-cancel"
 
 
 class MicIcon:
