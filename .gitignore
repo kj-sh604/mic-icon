@@ -1,1 +1,3 @@
 .venv
+build/
+mic_icon.egg-info/

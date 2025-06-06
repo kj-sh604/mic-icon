@@ -10,7 +10,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'mic-icon=mic_icon:main',
+            'mic-icon=mic_icon.__main__:main',
         ],
     },
 )

@@ -86,7 +86,11 @@ class MicIcon:
         return False
 
 
-if __name__ == "__main__":
+def main():
     MicIcon()
     Gtk.main()
     sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
