@@ -63,7 +63,7 @@ class MicIcon:
 
         for line in self.p.stdout:
             if " on source " in line:
-                GLib.idle_add(self._update_icon)
+                GLib.idle_add(self._update_icon, priority=GLib.PRIORITY_LOW)
         self.p.stdout.close()
         self.p.wait()
 
