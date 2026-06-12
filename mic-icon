@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+
+from __future__ import annotations
+import os
+import signal as _signal
+import subprocess
+import sys
+
+import pulsectl
+import gi
+
+gi.require_version("Gtk", "3.0")
+gi.require_version("AppIndicator3", "0.1")
+from gi.repository import Gtk, GLib, AppIndicator3
+
+VERSION = "20260612"
+
+USAGE = """usage: mic-icon [OPTIONS]
+  -h, --help       show this help and exit
+  -V, --version    show the current version and exit"""
+
+ICON_UNMUTED = "microphone-sensitivity-high"
+ICON_MUTED = "microphone-sensitivity-muted"
+
+
+class MicIcon:
+    def __init__(self):
+        self.ind = AppIndicator3.Indicator.new(
+            "mic-icon",
+            ICON_UNMUTED,
+            AppIndicator3.IndicatorCategory.APPLICATION_STATUS,
+        )
+        self.ind.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
+
+        menu = Gtk.Menu()
+        quit_item = Gtk.MenuItem(label="Quit")
+        quit_item.connect("activate", self.quit)
+        menu.append(quit_item)
+        menu.show_all()
+        self.ind.set_menu(menu)
+
+        self.pulse = pulsectl.Pulse("mic-icon")
+
+        self.p = subprocess.Popen(
+            ["pactl", "subscribe"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+        )
+
+        self._channel = GLib.IOChannel.unix_new(self.p.stdout.fileno())
+        self._channel.set_encoding("utf-8")
+        self._channel.set_close_on_unref(True)
+        GLib.io_add_watch(
+            self._channel,
+            GLib.PRIORITY_DEFAULT,
+            GLib.IOCondition.IN,
+            self._on_pactl_output,
+        )
+
+        _signal.signal(_signal.SIGINT, self._on_signal)
+        _signal.signal(_signal.SIGTERM, self._on_signal)
+
+        self._update_icon()
+
+    def _on_signal(self, signum, frame):
+        GLib.idle_add(self.quit)
+
+    def _on_pactl_output(self, channel, condition):
+        line = channel.readline()
+        if not line:
+            return False
+        if " on source " in line:
+            self._update_icon()
+        return True
+
+    def _update_icon(self):
+        try:
+            default_name = self.pulse.server_info().default_source_name
+            src = self.pulse.get_source_by_name(default_name)
+            muted = src.mute
+        except Exception:
+            muted = False
+
+        icon = ICON_MUTED if muted else ICON_UNMUTED
+        self.ind.set_icon_full(icon, icon)
+
+    def quit(self, *args):
+        if hasattr(self, "p") and self.p.poll() is None:
+            self.p.terminate()
+        Gtk.main_quit()
+        return False
+
+
+def main():
+    if len(sys.argv) > 1:
+        arg = sys.argv[1]
+        if arg in ("-h", "--help"):
+            print(USAGE)
+            return
+        if arg in ("-V", "--version"):
+            print(f"mic-icon-{VERSION}")
+            return
+        print(f"error: unknown flag `{arg}`", file=sys.stderr)
+        print(USAGE, file=sys.stderr)
+        sys.exit(1)
+
+    MicIcon()
+    Gtk.main()
+
+
+if __name__ == "__main__":
+    main()

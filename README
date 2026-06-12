@@ -1,23 +1,32 @@
 mic-icon
+--------
 
-lightweight mic status indicator for the systray
-like volumeicon but for microphones
+lightweight mic status indicator for the systray.
+like volumeicon but for microphones.
 
-dependencies
-    python 3
-    pulsectl
-    pygobject
-    pactl (pulseaudio or pipewire-pulse)
-    gtk 3.0
-    appindicator3
+arch linux deps (system packages)
+  - python
+  - python-pulsectl
+  - python-gobject
+  - gtk3
+  - libappindicator-gtk3
+  - pipewire-pulse (or pulseaudio)
 
 install
+  python -m venv .venv
+  source .venv/bin/activate
+  pip install pulsectl pycairo PyGObject
 
-    python -m venv .venv
-    source .venv/bin/activate
-    pip install .
+  # symlink into PATH or use make install
+  make install
 
-    symlink .venv/bin/mic-icon into your PATH
-    run on startup or however you want
+  # run on startup or however you want
+  mic-icon &
 
-license: 0bsd
+usage
+  mic-icon
+  mic-icon --help
+  mic-icon --version
+
+license
+  0BSD
